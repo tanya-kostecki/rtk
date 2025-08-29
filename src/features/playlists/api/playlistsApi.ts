@@ -1,28 +1,37 @@
-/*https://musicfun.it-incubator.app/api/1.0*/
-// Need to use the React-specific entry point to import createApi
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-
+import { baseApi } from '@/app/api/baseApi'
 import type {
+  CreatePlaylistArgs,
   FetchPlaylistsArgs,
+  PlaylistData,
   PlaylistsResponse,
+  UpdatePlaylistArgs,
 } from '@/features/playlists/api/playlistsApi.types'
 
 // Define a service using a base URL and expected endpoints
-export const playlistsApi = createApi({
-  reducerPath: 'playlistsApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: import.meta.env.VITE_BASE_URL,
-    headers: {
-      'API-KEY': import.meta.env.VITE_API_KEY,
-    },
-  }),
+export const playlistsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     fetchPlaylists: builder.query<PlaylistsResponse, void>({
-      query: () => 'playlists',
+      query: () => `playlists`,
+      providesTags: ['Playlists'],
+    }),
+    createPlaylists: builder.mutation<{ data: PlaylistData }, CreatePlaylistArgs>({
+      query: (body) => ({ method: 'post', url: `playlists`, body }),
+      invalidatesTags: ['Playlists'],
+    }),
+    deletePlaylist: builder.mutation<void, string>({
+      query: (playlistId) => ({ method: 'delete', url: `playlists/${playlistId}` }),
+      invalidatesTags: ['Playlists'],
+    }),
+    updatePlaylist: builder.mutation<void, { playlistId: string; body: UpdatePlaylistArgs }>({
+      query: ({ playlistId, body }) => ({ method: 'put', url: `playlists/${playlistId}`, body }),
+      invalidatesTags: ['Playlists'],
     }),
   }),
 })
 
-// Export hooks for usage in functional components, which are
-// auto-generated based on the defined endpoints
-export const { useFetchPlaylistsQuery } = playlistsApi
+export const {
+  useFetchPlaylistsQuery,
+  useCreatePlaylistsMutation,
+  useDeletePlaylistMutation,
+  useUpdatePlaylistMutation,
+} = playlistsApi
