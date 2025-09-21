@@ -15,7 +15,7 @@ import s from './PlaylistPage.module.css'
 export const PlaylistsPage = () => {
   const [playlistId, setPlaylistId] = useState<string | null>(null)
   const { register, handleSubmit, reset } = useForm<UpdatePlaylistArgs>()
-  const { data, isLoading } = useFetchPlaylistsQuery()
+  const { data, isLoading } = useFetchPlaylistsQuery({ userId: 35 })
 
   const [deletePlaylist] = useDeletePlaylistMutation()
 

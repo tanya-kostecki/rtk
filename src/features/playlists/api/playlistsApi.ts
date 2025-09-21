@@ -1,7 +1,7 @@
 import { baseApi } from '@/app/api/baseApi'
+import type { Images } from '@/common/types'
 import type {
   CreatePlaylistArgs,
-  FetchPlaylistsArgs,
   PlaylistData,
   PlaylistsResponse,
   UpdatePlaylistArgs,
@@ -10,8 +10,8 @@ import type {
 // Define a service using a base URL and expected endpoints
 export const playlistsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    fetchPlaylists: builder.query<PlaylistsResponse, void>({
-      query: () => `playlists`,
+    fetchPlaylists: builder.query<PlaylistsResponse, { userId: number }>({
+      query: ({ userId }) => `playlists?userId=${userId}`,
       providesTags: ['Playlists'],
     }),
     createPlaylists: builder.mutation<{ data: PlaylistData }, CreatePlaylistArgs>({
@@ -26,6 +26,14 @@ export const playlistsApi = baseApi.injectEndpoints({
       query: ({ playlistId, body }) => ({ method: 'put', url: `playlists/${playlistId}`, body }),
       invalidatesTags: ['Playlists'],
     }),
+    uploadPlaylistCover: builder.mutation<Images, { playlistId: string; file: File }>({
+      query: ({ playlistId, file }) => {
+        const formData = new FormData()
+        formData.append('file', file)
+        return { method: 'post', url: `playlists/${playlistId}/images/main`, body: formData }
+      },
+      invalidatesTags: ['Playlists'],
+    }),
   }),
 })
 
@@ -34,4 +42,5 @@ export const {
   useCreatePlaylistsMutation,
   useDeletePlaylistMutation,
   useUpdatePlaylistMutation,
+  useUploadPlaylistCoverMutation,
 } = playlistsApi
