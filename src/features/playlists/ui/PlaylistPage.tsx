@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 
+import { Pagination } from '@/common'
+import { useDebounceValue } from '@/common/hooks'
 import {
   useDeletePlaylistMutation,
   useFetchPlaylistsQuery,
@@ -14,8 +16,18 @@ import s from './PlaylistPage.module.css'
 
 export const PlaylistsPage = () => {
   const [playlistId, setPlaylistId] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(2)
+
   const { register, handleSubmit, reset } = useForm<UpdatePlaylistArgs>()
-  const { data, isLoading } = useFetchPlaylistsQuery({ userId: 35 })
+
+  const debouncedSearch = useDebounceValue(search)
+  const { data, isLoading } = useFetchPlaylistsQuery({
+    search: debouncedSearch,
+    pageNumber: currentPage,
+    pageSize,
+  })
 
   const [deletePlaylist] = useDeletePlaylistMutation()
 
@@ -38,15 +50,22 @@ export const PlaylistsPage = () => {
     }
   }
 
-  if (isLoading) {
-    return <h1>Loading...</h1>
+  const changePageSizeHandler = (size: number) => {
+    setCurrentPage(1)
+    setPageSize(size)
   }
 
   return (
     <div className={s.container}>
       <h1>Playlists page</h1>
       <CreatePlaylistForm />
+      <input
+        type="search"
+        placeholder={'Search playlist by title'}
+        onChange={(e) => setSearch(e.currentTarget.value)}
+      />
       <div className={s.items}>
+        {!data?.data.length && !isLoading && <h2>Playlists not found</h2>}
         {data?.data.map((playlist) => {
           const isEditing = playlistId === playlist.id
 
@@ -71,6 +90,13 @@ export const PlaylistsPage = () => {
           )
         })}
       </div>
+      <Pagination
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        pagesCount={data?.meta.pagesCount || 1}
+        pageSize={pageSize}
+        changePageSize={changePageSizeHandler}
+      />
     </div>
   )
 }

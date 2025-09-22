@@ -2,6 +2,7 @@ import { baseApi } from '@/app/api/baseApi'
 import type { Images } from '@/common/types'
 import type {
   CreatePlaylistArgs,
+  FetchPlaylistsArgs,
   PlaylistData,
   PlaylistsResponse,
   UpdatePlaylistArgs,
@@ -10,8 +11,8 @@ import type {
 // Define a service using a base URL and expected endpoints
 export const playlistsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    fetchPlaylists: builder.query<PlaylistsResponse, { userId: number }>({
-      query: ({ userId }) => `playlists?userId=${userId}`,
+    fetchPlaylists: builder.query<PlaylistsResponse, FetchPlaylistsArgs>({
+      query: (params) => ({ url: 'playlists', params }),
       providesTags: ['Playlists'],
     }),
     createPlaylists: builder.mutation<{ data: PlaylistData }, CreatePlaylistArgs>({
