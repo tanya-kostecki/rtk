@@ -1,0 +1,12 @@
+.items {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.item {
+    padding: 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    word-break: break-word;
+}
