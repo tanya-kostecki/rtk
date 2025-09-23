@@ -1,18 +1,13 @@
+import { useInfiniteScroll } from '@/common/hooks/useInfiniteScroll'
 import { useFetchTracksInfiniteQuery } from '@/features/tracks/api/tracksApi'
 
 import s from './TracksPage.module.css'
 
 export const TracksPage = () => {
-  const { data, isLoading, hasNextPage, isFetching, isFetchingNextPage, fetchNextPage } =
+  const { data, hasNextPage, isFetching, isFetchingNextPage, fetchNextPage } =
     useFetchTracksInfiniteQuery()
-  /*const pages = data?.pages.map((page) => page.data).flat()*/
+  const { observerRef } = useInfiniteScroll({ hasNextPage, isFetching, fetchNextPage })
   const pages = data?.pages.flatMap((page) => page.data)
-
-  const loadMoreHandler = () => {
-    if (hasNextPage && !isFetching) {
-      fetchNextPage()
-    }
-  }
 
   return (
     <div>
@@ -32,18 +27,12 @@ export const TracksPage = () => {
           )
         })}
       </div>
-
-      {!isLoading && (
-        <>
-          {hasNextPage ? (
-            <button onClick={loadMoreHandler} disabled={isFetching}>
-              {isFetchingNextPage ? 'Loading...' : 'Load More'}
-            </button>
-          ) : (
-            <p>Nothing more to load</p>
-          )}
-        </>
+      {hasNextPage && (
+        <div ref={observerRef}>
+          {isFetchingNextPage ? <div>Loading more...</div> : <div style={{ height: '20px' }} />}
+        </div>
       )}
+      {!hasNextPage && pages && pages.length > 0 && <p>Nothing more to load</p>}
     </div>
   )
 }
