@@ -3,11 +3,13 @@ import { Route, Routes } from 'react-router'
 import { MainPage } from '@/app'
 import { PageNotFound } from '@/common'
 import { ProfilePage, TracksPage, PlaylistsPage } from '@/features'
+import { OAuthCallback } from '@/features/auth'
 
 import { Path } from './routes'
 
 export const Routing = () => (
   <Routes>
+    <Route path={Path.OAuthRedirect} element={<OAuthCallback />} />
     <Route path={Path.Main} element={<MainPage />} />
     <Route path={Path.Main} element={<MainPage />} />
     <Route path={Path.Playlists} element={<PlaylistsPage />} />
