@@ -8,7 +8,6 @@ import type {
   UpdatePlaylistArgs,
 } from '@/features/playlists/api/playlistsApi.types'
 
-// Define a service using a base URL and expected endpoints
 export const playlistsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     fetchPlaylists: builder.query<PlaylistsResponse, FetchPlaylistsArgs>({
@@ -25,6 +24,30 @@ export const playlistsApi = baseApi.injectEndpoints({
     }),
     updatePlaylist: builder.mutation<void, { playlistId: string; body: UpdatePlaylistArgs }>({
       query: ({ playlistId, body }) => ({ method: 'put', url: `playlists/${playlistId}`, body }),
+      onQueryStarted: async ({ playlistId, body }, { queryFulfilled, dispatch }) => {
+        const patchCollection = dispatch(
+          playlistsApi.util.updateQueryData(
+            'fetchPlaylists',
+            {
+              pageNumber: 1,
+              pageSize: 2,
+              search: '',
+            },
+            (state) => {
+              const index = state.data.findIndex((playlist) => playlist.id === playlistId)
+              if (index !== -1) {
+                state.data[index].attributes = { ...state.data[index].attributes, ...body }
+              }
+            }
+          )
+        )
+
+        try {
+          await queryFulfilled
+        } catch {
+          patchCollection.undo()
+        }
+      },
       invalidatesTags: ['Playlists'],
     }),
     uploadPlaylistCover: builder.mutation<Images, { playlistId: string; file: File }>({
