@@ -13,13 +13,23 @@ export const useGlobalLoading = () => {
   return useSelector((state: RootState) => {
     const queries = Object.values(state.baseApi.queries || {})
     const mutations = Object.values(state.baseApi.mutations || {})
-
+    /*
     const hasActiveQueries = queries.some((query) => {
       if (query?.status !== 'pending') return
 
       if (excludedEndpoints.includes(query.endpointName)) {
         const completedQueries = queries.filter((q) => q?.status === 'fulfilled')
         return completedQueries.length > 0
+      }
+    })*/
+
+    const hasActiveQueries = queries.some((query) => {
+      if (query?.status !== 'pending') return
+
+      if (excludedEndpoints.includes(query.endpointName)) {
+        return queries.some(
+          (q) => q?.endpointName === query.endpointName && q?.status === 'fulfilled'
+        )
       }
     })
 
