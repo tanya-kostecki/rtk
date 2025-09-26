@@ -1,21 +1,26 @@
 import { baseApi } from '@/app/api/baseApi'
-import type { Images } from '@/common/types'
+import { imagesSchema } from '@/common/schemas'
+import { withZodCatch } from '@/common/utils'
 import type {
   CreatePlaylistArgs,
   FetchPlaylistsArgs,
-  PlaylistData,
-  PlaylistsResponse,
   UpdatePlaylistArgs,
 } from '@/features/playlists/api/playlistsApi.types'
+import {
+  playlistCreateResponseSchema,
+  playlistsResponseSchema,
+} from '@/features/playlists/model/playlists.schemas'
 
 export const playlistsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    fetchPlaylists: builder.query<PlaylistsResponse, FetchPlaylistsArgs>({
-      query: (params) => ({ url: 'playlists', params }),
+    fetchPlaylists: builder.query({
+      query: (params: FetchPlaylistsArgs) => ({ url: 'playlists', params }),
+      ...withZodCatch(playlistsResponseSchema),
       providesTags: ['Playlists'],
     }),
-    createPlaylists: builder.mutation<{ data: PlaylistData }, CreatePlaylistArgs>({
-      query: (body) => ({ method: 'post', url: `playlists`, body }),
+    createPlaylists: builder.mutation({
+      query: (body: CreatePlaylistArgs) => ({ method: 'post', url: `playlists`, body }),
+      ...withZodCatch(playlistCreateResponseSchema),
       invalidatesTags: ['Playlists'],
     }),
     deletePlaylist: builder.mutation<void, string>({
@@ -56,12 +61,13 @@ export const playlistsApi = baseApi.injectEndpoints({
       },
       invalidatesTags: ['Playlists'],
     }),
-    uploadPlaylistCover: builder.mutation<Images, { playlistId: string; file: File }>({
-      query: ({ playlistId, file }) => {
+    uploadPlaylistCover: builder.mutation({
+      query: ({ playlistId, file }: { playlistId: string; file: File }) => {
         const formData = new FormData()
         formData.append('file', file)
         return { method: 'post', url: `playlists/${playlistId}/images/main`, body: formData }
       },
+      ...withZodCatch(imagesSchema),
       invalidatesTags: ['Playlists'],
     }),
     deletePlaylistCover: builder.mutation<void, { playlistId: string }>({
